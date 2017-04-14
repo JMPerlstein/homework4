@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
     /* static initalization, so that we can verify output */
     /* using very simple initialization right now */
     /* this isn't a good check for parallel debugging */
+    #pragma omp parallel for private(i, j)
     for (i=0; i<n; i++) {
         for (j=0; j<n; j++) {
             A[i*n+j] = 1;
@@ -61,12 +62,14 @@ int main(int argc, char **argv) {
 
     int k;
     #pragma omp parallel for private(i, j, k)
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i=0; i<n; i++) 
+    {
+        for (j=0; j<n; j++) 
+        {
             double c_ij = 0;
             int in = i*n;
-            #pragma omp reduction(+:c_ij) private(in)
-            for (k=0; k<n; k++) {
+            for (k=0; k<n; k++) 
+            {
                 c_ij += A[in+k]*B[k*n+j];
             }
             C[in+j] = c_ij;
@@ -77,6 +80,7 @@ int main(int argc, char **argv) {
 
     /* Verify */
     int verify_failed = 0;
+    #pragma omp parallel for private(i, j)
     for (i=0; i<n; i++) {
         for (j=0; j<n; j++) {
             if (C[i*n+j] != n)
