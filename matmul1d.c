@@ -103,8 +103,26 @@ int main(int argc, char **argv) {
 #if USE_MPI
     /* Parallel matmul code goes here, see lecture slides for idea */
     /* The matrix C should be updated correctly */
-    if (rank == 0) 
-        fprintf(stderr, "Fill in code here\n");
+    int sendval = rank;  //CHANGE
+    int recvval = -1; //CHANGE
+
+
+    int prevRank = rank-1;
+    int nextRank = rank+1;
+    if (rank == 0)
+        prevRank = (num_tasks-1);
+    if (rank == (num_tasks-1))
+        nextRank = 0;
+
+    int send_tag = rank;
+    MPI_Sendrecv(&sendval, 1, MPI_INT, nextRank, send_tag,
+            &recvval, 1, MPI_INT, prevRank, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+
+    assert(recvval == prevRank);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+       
+
 
 #else
     int k;
