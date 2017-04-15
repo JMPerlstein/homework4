@@ -54,6 +54,7 @@ int main(int argc, char **argv) {
     /* ensure that n is a multiple of num_tasks */
     n = (n/num_tasks) * num_tasks;
     
+
     int n_p = (n/num_tasks);
 
     /* print new n to let user know n has been modified */
@@ -103,33 +104,50 @@ int main(int argc, char **argv) {
 #if USE_MPI
     /* Parallel matmul code goes here, see lecture slides for idea */
     /* The matrix C should be updated correctly */
-    int sendval = rank;  //CHANGE
-    int recvval = -1; //CHANGE
-
-
-    int prevRank = rank-1;
+    MPI_Status stat;
+    
     int nextRank = rank+1;
-    if (rank == 0)
+    int prevRank = rank-1;
+
+    int size = n* n_p;
+    int offset = (rank*n_p);
+    int start = n*offset;
+    j = start;
+
+    if (rank==0)
         prevRank = (num_tasks-1);
-    if (rank == (num_tasks-1))
+    if (rank==(num_tasks-1))
         nextRank = 0;
 
-    int send_tag = rank;
-    MPI_Sendrecv(&sendval, 1, MPI_INT, nextRank, send_tag,
-            &recvval, 1, MPI_INT, prevRank, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    B = B[start];
 
-    assert(recvval == prevRank);
+    //Circular Shift
+    for(int shift == 0; shift < num_tasks-1; task++)
+    {
+        for (i=start; i<start+size; i++) 
+        {
+            for(j=0; j<size; j++)
+            {
+                C[i] = C[i] + A[i] * B[j]
+            } 
+        }
+
+        int send_tag = rank;
+        MPI_Sendrecv(&B[j], size, MPI_FLOAT, nextRank, MPI_ANY_TAG,
+                &B, size, MPI_FLOAT, prevRank, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    }
+
     MPI_Barrier(MPI_COMM_WORLD);
-
-       
-
 
 #else
     int k;
-    for (i=0; i<n_p; i++) {
-        for (j=0; j<n; j++) {
+    for (i=0; i<n_p; i++) 
+    {
+        for (j=0; j<n; j++) 
+        {
             float c_ij = 0;
-            for (k=0; k<n; k++) {
+            for (k=0; k<n; k++) 
+            {
                 c_ij += A[i*n+k]*B[k*n+j];
             }
             C[i*n+j] = c_ij;
